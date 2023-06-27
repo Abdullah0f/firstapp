@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     //
+    function homepage()
+    {
+        if (auth()->check()) {
+            return view('homepage-feed');
+        }
+        return view('homepage');
+    }
     function register(Request $request)
     {
         $incomingData = $request->validate([
@@ -15,7 +22,27 @@ class UserController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:3|max:20|confirmed'
         ]);
-        User::create($incomingData);
-        return "Hello from register";
+        $user = User::create($incomingData);
+        auth()->login($user);
+        return redirect('/')->with('success', 'You have been registered');
+    }
+
+    function login(Request $request)
+    {
+        // regenerates the session id
+        $request->session()->regenerate();
+        $incomingData = $request->validate([
+            'loginusername' => 'required',
+            'loginpassword' => 'required|min:3|max:20'
+        ]);
+        if (!auth()->attempt(["username" => $incomingData['loginusername'], "password" => $incomingData['loginpassword']])) {
+            return redirect('/')->with("failure", "Invalid credentials");
+        }
+        return redirect('/')->with('success', 'You have been logged in');
+    }
+    function logout()
+    {
+        auth()->logout();
+        return redirect('/')->with('success', 'You have been logged out');
     }
 }
