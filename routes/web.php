@@ -16,14 +16,31 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::get('/', [UserController::class, 'homepage']);
+Route::get("/admin", function () {
+    return "Admin Page";
+})->middleware("can:visitAdminPages");
 
-Route::get('/about', [exampleController::class, 'post']);
+Route::get('/', [UserController::class, 'homepage'])->name('homepage');
 
-Route::post('/register', [UserController::class, 'register']);
+Route::post('/register', [UserController::class, 'register'])->middleware('guest');
 
-Route::post('/login', [UserController::class, 'login']);
+Route::post('/login', [UserController::class, 'login'])->middleware('guest');
 
-Route::post('/logout', [UserController::class, 'logout']);
+Route::post('/logout', [UserController::class, 'logout'])->middleware('auth');
 
-Route::get("/create-post", [PostController::class, "showCreatePost"]);
+Route::get("/manage-avatar", [UserController::class, "showAvatarForm"])->middleware('auth');
+Route::post("/manage-avatar", [UserController::class, "updateAvatar"])->middleware('auth');
+
+Route::get("/create-post", [PostController::class, "showCreatePost"])->middleware('auth');
+
+Route::post("/create-post", [PostController::class, "storeNewPost"])->middleware('auth');
+
+Route::get("/posts/{post}", [PostController::class, "showPost"]);
+
+Route::get("/profile/{username:username}", [UserController::class, "showProfile"]);
+
+Route::delete("/posts/{post}", [PostController::class, "delete"])->middleware(['auth', 'can:delete,post']);
+
+Route::get("posts/{post}/edit", [PostController::class, "showEditPost"])->middleware(['auth', 'can:update,post']);
+
+Route::put("posts/{post}", [PostController::class, "update"])->middleware(['auth', 'can:update,post']);
