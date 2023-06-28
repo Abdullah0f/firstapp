@@ -44,10 +44,21 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
+    function feedPosts()
+    {
+        return $this->hasManyThrough(Post::class, Follow::class, "user_id", "user_id", "id", "followeduser");
+    }
     function posts()
     {
         return $this->hasMany(Post::class, "user_id");
+    }
+    function followers()
+    {
+        return $this->hasMany(Follow::class, "followeduser");
+    }
+    function following()
+    {
+        return $this->hasMany(Follow::class, "user_id");
     }
 
     function avatar(): Attribute

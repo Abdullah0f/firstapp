@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Follow;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,10 +13,10 @@ class UserController extends Controller
     //
     function homepage()
     {
-        if (auth()->check()) {
-            return view('homepage-feed');
+        if (!auth()->check()) {
+            return view('homepage');
         }
-        return view('homepage');
+        return view('homepage-feed', ["posts" => auth()->user()->feedPosts()->latest()->paginate(4)]);
     }
     function register(Request $request)
     {
@@ -47,12 +48,46 @@ class UserController extends Controller
         auth()->logout();
         return redirect('/')->with('success', 'You have been logged out');
     }
-
+    function profile($user)
+    {
+        // sharedData
+        $doesFollow = false;
+        if (auth()->check()) {
+            $doesFollow = Follow::where("user_id", auth()->id())->where("followeduser", $user->id)->exists();
+        }
+        $sharedData = [
+            "doesFollow" => $doesFollow,
+            "user" => $user,
+            "posts_count" => $user->posts()->count(),
+            "followers_count" => $user->followers()->count(),
+            "following_count" => $user->following()->count()
+        ];
+        view()->share("sharedData", $sharedData);
+    }
     function showProfile(User $username)
     {
+        // use sharedData that in this->profile
+        $this->profile($username);
+
         $posts = $username->posts()->get();
 
-        return view('profile-posts', ["user" => $username, "posts" => $posts, "posts_count" => $posts->count()]);
+        return view('profile-posts', ["posts" => $posts, "active" => "posts"]);
+    }
+    function showProfileFollowers(User $username)
+    {
+        $this->profile($username);
+        $follows = $username->followers()->get();
+
+
+        return view('profile-followers', ["follows" => $follows, "active" => "followers"]);
+    }
+    function showProfileFollowing(User $username)
+    {
+        $this->profile($username);
+        $follows = $username->following()->get();
+
+
+        return view('profile-following', ["follows" => $follows, "active" => "following"]);
     }
     function showAvatarForm()
     {
