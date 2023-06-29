@@ -13,7 +13,7 @@ class PostController extends Controller
     {
         $posts = Post::search($term)->get();
         $posts->load('user');
-        return view('search', ["posts" => $posts]);
+        return $posts;
     }
     function showCreatePost()
     {

@@ -1,10 +1,12 @@
 <?php
 
+use App\Events\ChatMessage;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,3 +56,19 @@ Route::delete("/follow/{user}", [FollowController::class, "removeFollow"])->midd
 
 // search
 Route::get("/search/{term}", [PostController::class, "search"]);
+
+// chat route
+Route::post("/send-chat-message", function (Request $request) {
+    $formFields = $request->validate([
+        "textvalue" => "required|min:1|max:1000"
+    ]);
+
+    if (!trim(strip_tags($formFields["textvalue"]))) {
+        return response()->noContent();
+    };
+    broadcast(new ChatMessage([
+        "textvalue" => trim(strip_tags($formFields["textvalue"])),
+        "username" => auth()->user()->username,
+        "avatar" => auth()->user()->avatar
+    ]));
+});
