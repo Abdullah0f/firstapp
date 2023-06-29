@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     //
+    function search($term)
+    {
+        $posts = Post::search($term)->get();
+        $posts->load('user');
+        return view('search', ["posts" => $posts]);
+    }
     function showCreatePost()
     {
         return view('create-post');

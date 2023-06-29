@@ -51,3 +51,6 @@ Route::put("posts/{post}", [PostController::class, "update"])->middleware(['auth
 // follow
 Route::post("/follow/{user}", [FollowController::class, "createFollow"])->middleware('auth');
 Route::delete("/follow/{user}", [FollowController::class, "removeFollow"])->middleware('auth');
+
+// search
+Route::get("/search/{term}", [PostController::class, "search"]);
